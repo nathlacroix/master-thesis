@@ -1,0 +1,67 @@
+INTRO: 
+	- Different ways of realizing them
+	- CZ gate
+
+
+\chapter{Calibrating and characterizing controlled arbitrary phase gates}
+TODO: read iswap, johannes Thesis ch cphase gate.
+- summary chapter
+- intro two qubit gate: 
+	- Role in algorithm; clifford group (?)  --> just subset is enough for computation, implies decomposition of more complex gates. 
+	- In NISQ, this can be a problem due to decoherence
+- in specific cases, might be useful to have something else than two standard clifford group to make it gate/time efficient. 
+- in this work, investigate one case applied to Variation Quantum Algorithms. Other recent example iswap.
+
+\section{Motivation}
+- 
+Where can it be used ?
+Advantages ?
+\section{Theoretical description}
+TODO: read Dicarlo, 
+- restate CZ hamiltonian, show that by tuning amplitude and interaction time, we can change the phase to arbitrary value. 
+- Chevron pattern --> Need high pop recovery.
+
+Interaction hamiltonian and unitary
+Fig: ?
+\section{Calibration}: Note: All with 3 level RO (no, not dynamic phase) --> is that a problem when leakage non negligeable?)
+- Discrete calibration for continuous parameters: linear interpolation between calibration points. Discuss time for calibration here ?
+- Pulse parametrization: flat top gaussian. good for chevron but potentially accumulates changes on bias-T (not Net Zero). 
+ Check up to which depth we can go. + need to introduce IIR and FIR filters. + buffers.
+ Three steps required for calibration:
+ Chevron + fit : ==> population recovery
+ calibrate conditional phase as function of flux pulse amplitude. 
+ Calibrate dynamic phase 
+ * Chevron:
+- see Fig. Vary pulse amplitude and length. Explain scheme.
+- fit cosine to each and take first maximum. Explain "time effective chevron". 
+- fit model with free parameters for dphidV. NOTE: where to put derivation of model ? Should I talk about the model (probably).
+
+* Conditional phase:
+- calibrate the amplitude yielding a specific conditional phase. Ramsey Experiment with C arb in between. Pulse length adapted automatically.  
+- Non linear function of amplitude -> different samplings.
+- not zero due to Alphazz even if pulse == 0: from alphazz
+ 
+* Dynamic phase:
+TODO: search ref for dyn phase calib.  (DiCarlo, Bauer, Heinsoo)
+QUESTION: difference dynamic phase and alphazz? alphazz effect on 11 and dynamic phase on individual ? does calibration suffer from alphazz ? I don't think so because other qubit is ont in 1 state.
+NOTE: origin of dynamic phase should ideally already be explained by this point.
+- brief recap dynamic phase is. Model. Approximation of square pulse.
+- has to be calibrated if gate is to be used in algorithm. We add z gates to compensate for it. 
+- calibration scheme: pi half + flux + pi half (i.e. ramsey experiment). (with and without flux?)
+- Requires calibration for all possible lengths/amplitudes. Rrequires above niquist sampling rate.
+See from model which sampling rate is required.
+- Discuss Figure. Deviations from model? 
+
+General discussion on calibration: time.
+Link to next: investigate performance, leakage and stability required for use in algorithm.
+\section{Characterization/ Benchmarking}
+First step is to perform process tomography. Show one in fig + other angles in table or plot. 
+Note: has to say that remove leakage. Justification: leakage has unpredictable effect on tomography since not in comp subspace. 
+Hence 3L RO, RM F level and consider leakage separately. TODO: ref on influence of leakage in process tomo?
+Non clifford --> cannot use RB ? 
+Cross entropy Benchmarking: why good and why not?
+
+ C- and D-phase errors: change to gate error. Fig: two in 1?
+ Leakage over phi: Discuss tendencies and causes. FIR filters. Length of interaction.
+ Process tomography
+Time drift (combine this with prev?): Stable over time.

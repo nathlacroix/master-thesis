@@ -76,12 +76,12 @@
 %% Document information
 %% ====================
 
-\title{Title of Thesis}
-\author{S. Tudent}
+\title{Implemention of three-level readout and controlled arbitrary phase gates for quantum optimization algorithms with superconducting circuits}
+\author{N. Lacroix}
 \thesistype{Master Thesis}
-\advisors{Advisors: Prof.\ Dr.\ A. D. Visor, Dr.\ P. Ostdoc}
-\department{Department of Computer Science}
-\date{January 19, 2038}
+\advisors{Advisors: Prof.\ Dr.\ A. Wallraff, Dr.\ C.K. Andersen}
+\department{Department of Solid States Physics}
+\date{January 14, 2020}
 
 \begin{document}
 
@@ -102,17 +102,24 @@
 %% TOC with the proper setup, do not change.
 \cleartorecto
 \tableofcontents
+\cleartorecto
+\listoffigures
+\cleartorecto
+\listoftables
 \mainmatter
 
 %% Your real content!
 \input{introduction}
 \input{rules}
 \input{typography}
-\input{sections}
-
+\input{chapters/transmon_cqed/transmon_cqed.tex}
+\input{chapters/qutrit_readout/qutrit_readout.tex}
+\input{chapters/carb_gate/carb_gate.tex}
+\input{chapters/qaoa/qaoa.tex}
+\input{conclusion.tex}
 \appendix
 
-\input{appendix}
+\input{appendices/appendix.tex}
 
 \backmatter
 
