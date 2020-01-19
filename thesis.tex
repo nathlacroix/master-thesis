@@ -70,8 +70,18 @@
 %% Make document internal hyperlinks wherever possible. (TOC, references)
 %% This MUST be loaded after varioref, which is loaded in 'extrapackages'
 %% above.  We just load it last to be safe.
-\usepackage[linkcolor=black,colorlinks=true,citecolor=black,filecolor=black]{hyperref}
+\usepackage[linkcolor=black,colorlinks=true,citecolor=black,filecolor=black, backref=page]{hyperref}
+% configure back references
+\renewcommand*{\backref}[1]{}
+\renewcommand*{\backrefalt}[4]{{%
+    \ifcase #1 Not cited.%
+          \or Cited on page~#2.%
+          \else Cited on pages #2.%
+    \fi%
+    }}
 
+
+\makeglossaries
 
 %% Document information
 %% ====================
@@ -106,12 +116,16 @@
 \listoffigures
 \cleartorecto
 \listoftables
+\cleartorecto
+\input{glossaries.tex}
+\printglossary[type=\acronymtype] 
+
 \mainmatter
 
 %% Your real content!
 \input{introduction}
-\input{rules}
-\input{typography}
+% \input{rules}
+% \input{typography}
 \input{chapters/transmon_cqed/transmon_cqed.tex}
 \input{chapters/qutrit_readout/qutrit_readout.tex}
 \input{chapters/carb_gate/carb_gate.tex}
@@ -119,12 +133,12 @@
 \input{conclusion.tex}
 \appendix
 
-\input{appendices/appendix.tex}
+\input{appendices/setup.tex}
 
 \backmatter
 
 \bibliographystyle{plain}
-\bibliography{refs}
+\bibliography{references_mendeley}
 
 \includepdf[pages={-}]{declaration-originality.pdf}
 
