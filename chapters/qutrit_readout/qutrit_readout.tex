@@ -1,1 +1,454 @@
 \chapter{High fidelity qutrit single shot readout} \label{ch:qutrit_readout}
+In classical computing, the state of a computer is stored in binary variables, called bits, adopting values of 0 or 1. In quantum computing, the computational space is a Hilbert space spanning the tensor product of quantum states \0 and \1 of individual quantum bits, or \textit{qubits}. 
+
+Physical implementation of qubits are in fact multi level systems, where the first two levels are arbitrarily defined to be the state \0 and \1. Although higher levels are not part of the computational basis, it can occur that while manipulating qubits, some accidentally leak into these higher levels. Physical qubits are also subject to decoherence. Unlike classical bits, information stored in qubits cannot be copied during the computation due to the no-cloning theorem. This prevents the use of redundancy as error correcting scheme. Instead, quantum error correction codes, such as the surface code \cite{Fowler2012SurfaceComputation}, are used to achieve fault tolerant quantum computing. 
+
+However, standard decoders for the surface code typically assume there is no population leakage outside of the computational subspace spanned by the \0 and \1 states  \cite{Ghosh2015}. Calibrating high fidelity gates and measurements with low leakage into higher levels is thus critical \cite{Ghosh2013UnderstandingCircuits} and requires accurate measurement of additional states of the qubit outside its computational basis. 
+
+This report describes how we perform high-fidelity single-shot readout of the first 3 eigenstates of a transmon, respectively named in this report $\ket{g}$ (ground state) or \0, $\ket{e}$ (first excited state) or \1, and $\ket{f}$ (second excited state) or \2. Higher levels are not the scope of this report but are further discussed in \cite{Sank2016Measurement-InducedApproximation, ElderHigh-fidelityCircuits}.
+
+This chapter starts with a theoretical description of the readout scheme and the different steps required to achieve high fidelity readout. Namely, finding the optimal readout frequency and defining  possible state discrimination techniques. Next, practical details are provided concerning the implementation of the scheme within the measurement framework. An alternative model is derived for experiments where the hardware imposes additional constraints on the state discrimination procedure. This model is compared to the statistically optimal one.  Thereafter, experimental data demonstrating high fidelity readout is reported. In addition,  basic measurements illustrating the usage of the scheme are described. Finally, a conclusion and outlook summarize the status and limiations of the single-shot readout scheme, and describe instances in which such readout scheme is intended to be useful, such as the tune-up of a CZ gate to minimize leakage into the \f-level.
+
+\section{Theorical description}
+\subsection{Three level readout}
+\label{s:high_level_description}
+The state of a qutrit, $\ket{\psi}$, is defined as follow:
+\begin{equation}
+    \ket{\psi} = \alpha_0 \zero + \alpha_1 \one + \alpha_2 \two
+\end{equation}
+and has the probabilities $|\alpha_k|^2$, of being measured in $\ket{k}$ for $k \in \{0,1,2\}$.
+To readout the state of a qutrit, we make use of a dispersive interaction between the qutrit and a resonator. More specifically, we probe the resonator with a readout pulse. The output signal, $\Psi(t)$, consists of an in-phase real component, $I(t)$, and an imaginary quadrature, $Q(t)$. After several stages of amplification, $\Psi(t)$ is used to discriminate the qutrit state.  In average readout, where a high signal to noise ratio is of interest, the measurement is repeated many times. By contrast, the objective of single shot readout is to construct a function \textit{f} acting on a single time trace $\Psi(t)$ to determine the state of the qutrit. More specifically,  the objective is to find $f$ such that:
+\begin{equation}
+\label{eq:high_level_description:f}
+    f\left(\Psi(t)\right)=\ \left( \begin{array}{c}
+|\tilde{\alpha}_0|^2\\ 
+|\tilde{\alpha}_1|^2\\ 
+|\tilde{\alpha}_2|^2\end{array}
+\right)
+\end{equation}
+where $|\tilde{\alpha}_k|^2$ are estimates for $|\alpha_k|^2$. Assuming the qutrit is prepared in one of its eigenstates, the measured state of the qutrit is then assigned using maximum likelihood classification, namely:
+\begin{equation} \label{eq:max_likelihood_state}
+    \ket{\psi_{assigned}} = \ket{k'}
+\end{equation}
+where $k' = \argmax_k |\tilde{\alpha}_k|^2$ is the most likely state label.
+By repeating such measurement and state assignement procedure many times over the 3 eigenstates, the performance of the three-level readout can be conveniently visualized in the following normalized matrix, called state assignment probability matrix:
+
+\begin{table}[H]
+\centering
+\begin{equation}     \label{eq:state_assignment_probability_matrix}
+\begin{tabular}{ll|lll}
+ &  & \multicolumn{3}{l}{Assigned} \\
+ &  & g & e & f \\ \hline
+\multirow{3}{*}{\STAB{\rotatebox[origin=c]{90}{Prepared}}} & g & ... & ... & ... \\
+ & e & ... & ... & ... \\
+ & f & ... & ... & ...
+\end{tabular}
+\end{equation}
+\end{table} 
+\noindent where the element of row $i$ and column $j$ corresponds to $P(s_j|s_i)$, the probability of assigning a prepared state $i$ to state $j$. These probabilities are estimated from the counts of the repeated single shot measurements.
+Under ideal conditions, the above-mentioned matrix results in the identity matrix. In practice, different mechanisms prevent the assignment matrix of reaching identity. For instance $T_1$ decay before or during measurement, readout errors due to finite SNR, thermal population and state preparation errors.
+
+\subsection{Readout frequency optimization}
+The first step towards three-level readout consists of finding the readout pulse frequency yielding the highest distinguishability (SNR) between the 3 states concurrently. We start by preparing the qutrit in \g, (respectively \e, \f) and then measure the resonator response for a range of frequencies. At each readout frequency, the time-response of the resonator is integrated using boxcar integration weights \cite{Gambetta2007}. These measurements yield the state-dependent dispersive shift of the resonator, which can be used to discriminate the state of the qutrit.
+
+For the readout of a two-level system, we typically choose the frequency yielding the largest difference between the two state responses \cite{Heinsoo2018}. To generalize this approach to a three level system, we first model the readout noise as frequency and time independent Gaussian noise, centered at each frequency obtained during spectroscopy. We then compute the overlap between the 3 Gaussian distributions (one for each state readout) at each frequency. The frequency yielding the smallest total overlap between the Gaussian distributions results in optimal distinguishability for all three states concurrently and is therefore chosen as readout frequency. 
+
+\subsubsection{Analytical derivation} \label{s:analytical_derivation_3_gaussians}
+
+\begin{figure}[htp]
+  \centering
+  \begin{subfigure}[t]{0.47\textwidth}
+     \centering \includegraphics[height=5cm,width=\textwidth]{3_3d_gaussians.png}
+     \caption{ }
+     \label{fig:3gaussians_in_2d}
+  \end{subfigure}
+  \hspace{5pt}
+  \begin{subfigure}[t]{0.47\textwidth}
+     \centering 
+     \includegraphics[width=\textwidth]{2D_gaussians_projection.png}
+     \caption{ }
+     \label{fig:3gaussians_top_view}
+  \end{subfigure}
+  \caption{Readout frequency optimization problem under the assumption of Gaussian measurement noise. (a) Isometric view of 3 Gaussian distributions in an integrated IQ plane. They correspond to the readout noise model for the three eigen states for a given readout frequency. (b) Top view of 3 gaussians centered in G, E and F and their perpendicular bisectors. The shaded background color indicates which state is most  likely. $R_i$ indicates the different integration regions.  $D$ and $d$  indicate the circumcenter and circumradius respectively. }
+  \label{figure:3_gaussians}
+\end{figure}
+
+The state assignment probability matrix defined in Eq. \eqref{eq:state_assignment_probability_matrix} a is function of the readout frequency. Optimizing for the maximal contrast between the 3 states consists in chosing the frequency for which the sum of the non diagonal elements of this matrix is minimized.
+More specifically, the total measurement error for a given frequency $\omega_k$ is defined as:
+\begin{equation}
+Err_{\omega_k}= \sum_{i=0}^{2}{\sum_{j \neq i}^{2}{P(s_j | s_i)}}
+\end{equation}
+where $P_k(s_j|s_i)$ is the probability of assigning a measurement to state $j$ while it was originally prepared as state $i$ at frequency $\omega_k$, with $j\neq i$. The problem can also be reformulated as maximizing the trace of the matrix, namely:
+\begin{equation}
+   1 - \text{Err}_{\omega_k} = \sum_{i=0}^2{P_k(s_i|s_i)}
+\end{equation}
+
+such that the optimal readout frequency can be found using:
+\begin{equation} \label{eq:opt_freq_proba}
+\omega_{opt} = \argmax_{\omega_k}  \sum_{i=0}^2{P_k(s_i|s_i)}
+\end{equation}
+The latter formulation is easier to deal with analytically. Assuming the measurement is subject to Gaussian noise, readout errors are minimized when the separation of 3 Gaussian distributions is the largest. A conceptual illustration of the IQ plane with the 3 Gaussian distributions is provided in Fig. \ref{fig:3gaussians_in_2d}.
+A geometric, top-view representation of the optimization problem is presented in Fig. \ref{fig:3gaussians_top_view} for an arbitrary frequency $\omega_k$. Points G, E and F correspond to the means of gaussian distributions of the three levels in an integrated IQ plane. We assume the covariance matrix of the three state to be equal and isotropic. Indeed, the dominating noise source in the readout is expected to be the amplifiers, which are identical for each measured state. T$_1$-decay, measurement induced transitions and thermal population introduce non Gaussian noise which is not fully captured by this model. The effects of these phenomena on the state assignment are discussed in \ref{s:experimental_data}. 
+
+The symmetry of equal variance for all states implies that, for any measured data point, the distribution with the nearest mean (i.e. vertex of the triangle GEF) is the most likely distribution to have generated this data point. With maximum likelihood state assignment, the decision boundaries are hence the collection of points in space with equal likelihood for different distributions. In the case of equal variance,  the boundaries then coincide with the perpendicular bisectors of the triangle GEF. Indeed, the perpendicular bisectors of a triangle are the collections of points for which the Eucledian distance to two vertices is equal.
+
+Note that the \textit{de facto} state discrimination procedure occurs in another two-dimensional space (namely, in a weight-integrated space, cf. Section \ref{s:statistically_optimal_state_discrimination}). For ease of notation, we will also translate the Complex IQ plane to a Real, two dimensional plane.
+In such setting, the probability $P(s_i|s_i)$ of the state assignment probability matrix (we omit $k$ for clarity in the following equations) is fully determined by the integrated gaussian density function $\mathcal{N}_i(\mathbf{x}|\mathbf{\mu}_i, \mathbf{\Sigma}_i)$ for $i$ in $\{0,1,2\}$. With:
+\begin{itemize}
+    \item[--] $\displaymode \mathcal{N}_i(x|\mathbf{\mu}_i, \mathbf{\Sigma}_i) = \frac{1}{2\pi|\mathbf{\Sigma}_i|^{1/2}} \cdot \exp\left(-(\mathbf{x}-\mathbf{\mu}_i)^T\,\mathbf{\Sigma}_i^{-1}\,(\mathbf{x}-\mathbf{\mu}_i)\right)$ the Gaussian distribution modeling measurement noise of the two dimensional space.
+    \item[--] $\mathbf{\mu}_i$  the mean of each Gaussian distribution, i.e. point G, E and F on Fig. \ref{fig:3gaussians_top_view}.
+    \item[--] $\mathbf{\Sigma}_i$ the covariance of each Gaussian distribution.
+    \item[--] $\mathbf{x}$ an arbitrary point $\in \mathcal{R}^2$.
+\end{itemize}
+The integration domain are depicted in blue, orange, green in Fig. \ref{fig:3gaussians_top_view}, for each state G, E, and F respectively.  The optimal readout frequency is thus the frequency yielding the largest sum of these 3 integrals. 
+For ease of computation, each integration domain is further devided in 2 subdomains. By symmetry, it is easily seen that:
+\begin{subequations}
+\begin{equation}\label{eq:I1_integral}
+    \int_{R1}{\mathcal{N}_0(\mathbf{x}|\mathbf{\mu}_0, \mathbf{\Sigma}_0)d\mathbf{x}} = \int_{R2} \mathcal{N}_2(\mathbf{x}|\mathbf{\mu}_2, \mathbf{\Sigma}_2)d\mathbf{x} = I_1 
+\end{equation}
+\begin{equation}
+\int_{R3}{\mathcal{N}_2(\mathbf{x}|\mathbf{\mu}_2, \mathbf{\Sigma}_2)d\mathbf{x}} = \int_{R4} \mathcal{N}_0(\mathbf{x}|\mathbf{\mu}_0, \mathbf{\Sigma}_0)d\mathbf{x} = I_2 
+\end{equation}
+\begin{equation}
+\int_{R5}{\mathcal{N}_2(\mathbf{x}|\mathbf{\mu}_2, \mathbf{\Sigma}_2)d\mathbf{x}} = \int_{R6} \mathcal{N}_1(\mathbf{x}|\mathbf{\mu}_1, \mathbf{\Sigma}_1)d\mathbf{x} = I_3 
+\end{equation}
+\end{subequations}
+such that only 3 of the 6 subdomain integrals need to be computed.
+Therefore:
+\begin{equation}
+\sum_{i=0}^2{P(s_i | s_i)} = 2 \cdot ( I_1 + I_2 + I_3) \label{eq:total_non_overlap}
+\end{equation}
+A detailed derivation is provided for $I_1$. The other two integrals are solved in the similar way but are preceded by an appropriate rotation and translation to center the coordinate system at their mean. In addition, we add the constraint of sphericity to the covariance matrix $\Sigma$, which can then be written as $\sigma I$, where $I$ is the identity matrix. This assumption simplifies the analytical derivation as it remove all cross products from the covariance matrix. Finally, a polar coordinate transformation also eases the computation of the integral. In this parametrization, the radius of integration $r$ is a function of $\theta$, the angle between the real axis and $r$. Namely,
+\begin{equation}
+r(\theta) =\begin{cases}
+    m / \cos \theta, & \text{if $-\pi/2<\theta<\pi/2$}.\\
+    +\infty, & \text{otherwise}.
+  \end{cases} 
+\end{equation} 
+with $m$ being the distance between $E$ and the midpoint of ($E$, $F$), and assuming $\theta \in [-\pi, \pi[$. The integration bounds of $\theta$ are $ \pi - \gamma$ and $\gamma$ where $\gamma = \arccos{d/m}$.
+
+Eq. \eqref{eq:I1_integral} then becomes
+\begin{equation}
+\int_{R1} \frac{1}{2\pi \sigma^2} e^{-\frac{\mathbf{x}^\intercal \mathbf{x}}{2 \sigma^2}} d\mathbf{x}
+\end{equation}
+becomes 
+\begin{equation}
+I_1=\begin{cases}
+    \int_{\gamma - \pi}^{\gamma}\int_0^{m/\cos \theta}{\frac{1}{2\pi \sigma^2} \exp{\left(-\frac{\rho^2}{2 \sigma^2}\right)}\, \rho \,d\rho \,d\theta}, & \text{if $-\pi/2<\theta<\pi/2$}.\\
+    \int_{\gamma - \pi}^{\gamma}\int_0^{\infty}{\frac{1}{2\pi \sigma^2} \exp{\left(-\frac{\rho^2}{2 \sigma^2}\right)}\,\rho \,d\rho \,d\theta}, & \text{otherwise}.
+  \end{cases}
+\end{equation}
+By noting that the inner integral in both cases is the derivative of a gaussian (up to a constant):
+\begin{equation}
+\int_0^{a}{\frac{1}{2\pi \sigma^2} \exp{(-\frac{\rho^2}{2 \sigma^2})}\rho \,d\rho \,d\theta} =\frac{1}{2\pi} \left(1 - \exp{\left(\frac{-a^2}{2\sigma^2}\right)}\right)
+\end{equation}
+$I_1$ becomes
+\begin{equation}
+\begin{cases}
+    \int_{\gamma - \pi}^{\gamma}{\frac{1}{2\pi} \left(1 - e^{-\frac{m^2}{2 \sigma^2 \cdot \cos^2{\theta}}}\right)\,d\theta}, & \text{if $-\pi/2<\theta<\pi/2$}.\\
+    \int_{\gamma - \pi}^{\gamma}{\frac{1}{2\pi}d\theta}, & \text{otherwise}.
+  \end{cases}
+\end{equation}
+One can note that $\int_{\gamma - \pi}^{\gamma}{\frac{1}{2\pi}d\theta}$ is independent of both $\theta$ and results in a constant function integrated over $\pi$. $I_1$ can hence be simplified to:
+\begin{equation} \label{eq:final_frequency_I_integral}
+    I_1 = \frac{1}{2} - 
+    \begin{cases}
+    \int_{\gamma - \pi}^{\gamma}{e^{-\frac{m^2}{2 \sigma^2 \cdot \cos^2{\theta}}}\,d\theta}, & \text{if $-\pi/2<\theta<\pi/2$}.\\
+    0, & \text{otherwise}.
+  \end{cases}
+\end{equation}
+The 0 values for $\theta$ prevent the remaining integral to have a closed form solution, but the latter can easily be computed numerically. 
+
+An analoguous development holds for $I_2$ and $I_3$, such that the total overlap between the different Gaussian distributions can be calculated using Eq. \eqref{eq:total_non_overlap} and \eqref{eq:final_frequency_I_integral}
+\footnote{Note that, by setting appropriate normalized weights to the 3 integrals, contrast can be maximized  more specifically for 1 or 2 of the 3 states.}:
+\begin{equation}
+   \text{Err}_{\omega_k} = 1 - 2 \cdot \sum_{i=1}^{3}{I_{i,k}} 
+\end{equation}
+And thus the optimal readout frequency can be extracted as defined in Eq. \eqref{eq:opt_freq_proba}:
+\begin{equation} \label{eq:optimal_freq}
+    \omega_{opt} = \argmax_{\omega_k} {\sum_{i=1}^{3}{I_{i,k}}}
+\end{equation}
+
+
+\subsection{Statistically optimal state discrimination} \label{s:statistically_optimal_state_discrimination}
+With the readout frequency fixed, we define the mode-matched integration weights for single shot readout. In a two level system, taking the complex conjugate of the difference between the average ground and excited state responses of the readout pulse as mode-matched filter coefficients is shown to provide near-optimal filter efficiency \cite{Heinsoo2018, Gambetta2007, Bultink2018}. The mode-matched weighted integration of the time trace $\Psi(t)$ is then: 
+\begin{equation}
+    x_1 = \int_{0}^{T}{w_{1}(t)\cdot \Psi(t)dt} 
+\end{equation}
+where $w_{1}(t)$ are the mode-matched weights described above. The index specifies that this is the complex weights corresponding to the \textit{first} integration unit.
+A second integration unit is defined to extend this scheme to a three level system \cite{Reuer2018}. More specifically, the second integration unit and corresponding weights, $w_2(t)$, are chosen such that $\{w_{1}(t), w_{2}(t)\}$ is a basis spanning the hyperplane defined by the average response of the three states. Similarily to the two-level case, $w_{2}(t)$ corresponds to the complex conjugate of the difference between the average ground and \textit{second} excitated state responses. \footnote{The description of the statistically optimal state assignment procedure is identical to the one described in \cite{Reuer2018}. Implementation thereof, contains several differences described in the next section.}
+
+These two sets of complex weights are then uploaded on the Ultra High Frequency Quantum Controller (UHFQC) to perform real-time integration of the time traces, such that each single shot measurement results in a two dimensional data point (one for each integration unit), $\mathbf{x}$, with:
+\begin{equation} \label{eq:weighted_time_trace_integration}
+    x_i = \int_{0}^{T}{w_{i}(t)\cdot \Psi(t)dt} \text{ for $i \in \{1,2\}$}
+\end{equation}
+
+Under the approximation of Gaussian readout noise, repeated time-integrated single shot measurements for the 3 eigenstates will result in Gaussian distributed data points in the two-dimensional integrated space. More specifically, 3 Gaussian compoments will arise (one for each state). In this case, the statistically optimal approach to assign a new data point to a state is a multimodal gaussian mixture model (GMM) \cite{Bishop2006}. A $K$-component GMM models each point in space as a weighted sum of $K$ Gaussian densities, such that the probability density function at a point $\mathbf{x}$ can be written as:
+
+\begin{equation}
+p(\mathbf{x})=\sum_{k=0}^{K-1} \pi_{k} \mathcal{N}\left(\mathbf{x}\, | \, \boldsymbol{\mu}_{k}, \mathbf{\Sigma}_{k}\right)
+\end{equation}
+where $\mathcal{N}(\mathbf{\mu_k,\Sigma_k})$ denotes the individual Gaussian components with mean $\mathbf{\mu_k}$ and covariance $\mathbf{\Sigma_k}$, and $\pi_k$ denotes the mixing coefficient \cite{Bishop2006}.
+The mixture can be used to compute the posterior probability of a new incoming data point to be produced by  each of the respective eigenstates. These posterior probabilities are called responsibilities $\gamma_{k}(\mathbf{x}) $ and are defined by the relative densities of the different components:
+\begin{equation}
+\gamma_{k}(\mathbf{x}) =\frac{\pi_{k} \mathcal{N}\left(\mathbf{x}\, | \, \boldsymbol{\mu}_{k}, \mathbf{\Sigma}_{k}\right)}{\sum_{l} \pi_{l} \mathcal{N}\left(\mathbf{x}\, | \,\boldsymbol{\mu}_{l}, \mathbf{\Sigma}_{l}\right)}
+\end{equation}
+Thus, the responsibilities coincide with the coefficients $|\tilde{\alpha}_k|^2$ of Eq. \eqref{eq:high_level_description:f}, and the GMM serves as function $f$. Using Eq. \eqref{eq:max_likelihood_state}, the  maximum likelihood state for data point $\mathbf{x}$ is then 
+ $\argmax_{k} \gamma_{k}(\mathbf{x})$. For further readings on GMM, we recommend \cite{Bishop2006, Hastie2017}. 
+
+\section{Implementation} \label{s:implementation}
+This section describes the relevant implementation details of Section \ref{s:statistically_optimal_state_discrimination} three-level single shot readout in the \texttt{pycQED} framework. The focus lies on the implementation of the statistically optimal state discrimination and on hardware limitations impacting the fitting of the model.
+
+% \subsection{Readout frequency optimization}
+\subsection{Statistically optimal state discrimination}
+To implement the three-level readout scheme on a physical setup, the GMM described in Section \ref{s:statistically_optimal_state_discrimination} has to be fitted to experimental data. The most common approach is to use the Expectation Maximization (EM) algorithm \cite{Bishop2006}, as the maximum likelihood estimator has no closed form and therefore has to be estimated iteratively \cite[p.~434-439]{Bishop2006}. We use the open source python package \texttt{scikit-learn}  \cite{scikit-learn}  to implement the GMM fitting in \texttt{pycQED}. 
+
+The typical workflow to calibrate the three-level single shot readout consists of the following steps:
+\begin{enumerate}
+    \item Calibrate parameters of the $R^{\pi}_x$ rotation pulse to prepare the qubit in state $|e\rangle$. 
+    \item Calibrate parameters of the second excitation pulse i.e. find the suitable amplitude and frequency to prepare the qubit into state $|f\rangle$.
+    \item Measure average time dependent readout responses of the resonator for each eigenstate. The complex conjugate difference in IQ plane between the ground and first excited state time-traces is taken as integration weights for the first integration unit. The second is defined by using the Gram-Schmidt algorithm on the complex conjugate difference between the ground and second excited state to find an vector, orthonormal to the first set of integration weights, and spanning the hyperspace of the 3 eigenstates. 
+    \item The two sets of integration weights,  $\{w_1, w_2\}$, defined in  \ref{s:statistically_optimal_state_discrimination}, are uploaded on the UHFQC. These allow to perform the real-time integration of the single shot time traces described in Eq. \eqref{eq:weighted_time_trace_integration}, but where the integral is replaced by a sum and the time interval is the sampling rate of the UHFQC:
+    \begin{equation}
+        x_i = \sum_{t=0}^{T}{w_{i,t}\cdot \Psi_t} \text{ for $i \in \{1,2\}$}
+    \end{equation}
+    \item Prepare each eigenstate 50 000 times\footnote{Empirically found to be a  number of shots achieving low statistical estimation errors.}, which after real-time integration results in a two-dimensional data point per shot.
+    \item Fit the GMM to the dataset of integrated shots. The constraint of equal covariance matrix is optionally used. 
+    \item Evaluate the quality of the readout by constructing the state assignment probability matrix
+\end{enumerate}
+Example measurements for the last two steps of this calibration routine are provided in Fig. \ref{fig:ssro_opt} in Section \ref{s:experimental_data} of this report. 
+
+
+
+\section{Experimental characterization of qutrit single shot readout} \label{s:experimental_data}
+Three level single shot readout has been previously been demonstrated on transmon qutrits \cite{Kurpiers2018DeterministicPhotons, Magnard2018FastQubit}. This section demonstrates the ability to perform single shot readout on a physical three level system with a correct state assignment probability of 98.52\%. To our best knowledge, this exceeds  other correct state assignment probabilities reported in literature for transmon qutrits.  
+
+A picture of the device on which the measurements were performed, along with the device parameters, is provided in Appendix \ref{app:Device_information_BF1}. First, the quality of the three-level readout is assessed. This includes an evaluation of both the statistically optimal and the hardware constrained state assignment procedures. The quality of readout is also compared to two level readout on the same qubit. The second subsection describes a rabi and a T1 measurement of the \f-level performed using this readout scheme.
+\subsection{Single shot readout procedures}
+\subsubsection{Statistically optimal state assignement} \label{s:exp_statistically_opt_state_assignement}
+\begin{figure}[t]
+  \centering
+  \begin{subfigure}[t]{0.50\textwidth}
+     \centering 
+     \includegraphics[width=\textwidth]{ssro_opt.png}
+     \caption{ }
+     \label{fig:ssro_opt_shots}
+  \end{subfigure}
+  \hspace{5pt}
+  \begin{subfigure}[t]{0.36\textwidth}
+     \centering 
+     \includegraphics[width=\textwidth]{ssro_opt_state_asignment_mtx.png}
+     \caption{ }
+     \label{fig:ssro_opt_state_asignment_mtx}
+  \end{subfigure}
+   \caption{Statistically optimal state assignment procedure. (a) Data points obtained by integrating 50000 time traces of Qubit 1 prepared in each of its eigenstate using two integration units. Preselection was performed to mitigate thermal population (see Appendix \ref{app:Device_information_BF1} for thermal population estimates). The boundaries correspond to the decision boundaries of the fitted GMM. The red data points correspond to the position of the means of each Gaussian component. In addition, marginal histogram distributions are displayed right and above the main plot. (b) State assignment probability matrix corresponding to the time traces displayed in (a) after pre-selection. The rows correspond to the prepared states and the columns to which state the prepared eigenstates were assigned using the GMM.}
+  \label{fig:ssro_opt}
+\end{figure}
+In Fig. \ref{fig:ssro_opt} we show the result from preparing and measuring a qutrit in each of its eigenstates 50000 times. A two dimensional data point is obtained for each shot (one corresponding to each integration unit). The mode-matched weights corresponding to the first integration unit are the complex conjugate of the ground and second exited state responses of the readout pulse. The mode-matched weights of the second integration unit are orthonormal to the first and spans the hyperplane defined by the average responses of the 3 eigenstates. The weights, as well as the time response for each eigenstate, are shown in  Fig. \ref{fig:mode_matched_weights}. Thereafter, a GMM is fitted to these data points to assign the single shots to each of the three states, using the constraint of a common covariance matrix for the 3 states. Readout parameters optimization is presented in Appendix \ref{app:ro_opt}.
+
+Predicting the most likely state on the entire 2D-plane results in the decision boundaries indicated by the background color of the experimental data in Fig. \ref{fig:ssro_opt_shots}. These one-dimensional boundaries can be interpreted as the natural extension of the threshold (zero-dimensional) used in a two level system for assigning a shot to the ground or excited state. 
+
+Fig. \ref{fig:ssro_opt_state_asignment_mtx} illustrates the state assignment probability matrix for the single shot measurements displayed in Fig. \ref{fig:ssro_opt_shots}. The average three-level correct state assignment probability is defined as
+\begin{equation}
+    \mathcal{F}_{avg} = \frac{1}{3}\text{tr}(A)
+\end{equation}
+where $A$ is the state assignment probability matrix.
+For the presented run, it amounts to 98.52\%. Notable observations for each matrix row:
+\begin{itemize}
+    \item $|g\rangle$: Preselection procedure removes the majority of the thermal population (on the order of 1\%, see Appendix \ref{app:Device_information_BF1}).  Remaining errors lie below 1\textperthousand. Possible mechanisms include finite overlap between the distributions and measurement induced transitions.
+    \item $|e\rangle$: 
+    \begin{itemize}
+        \item The assignment of a $|g\rangle$ state for a $|e\rangle$ preparation is dominated by $T_1$ decay. Given a $T_1$ of $25.11\, \mu s$ and an integration length of $400\,$ns,  1.58\% of the prepared $|e\rangle$ shots decay during the measurement. This number explains an important fraction of the observed 1.66\%. %In principle, optimized integration weights can reduce the amount of shots misclassified due to decay. Nevertheless, we can observe in Fig. \ref{fig:mode_matched_weights} that the signal used to distinguish \g from \e (namely integration unit 0) lasts until approx. 350 $ns$. 
+        The overlap of distributions due to finite SNR is another source of errors.
+        \item The assignment of $|f\rangle$ state for a $|e\rangle$ likely arise from measurement induced transitions. For the presented run, the value is very small compared to other errors, such that measurement induced transitions are difficulty distinguishable from readout overlap errors. 
+    \end{itemize}
+    \item $|f\rangle$: similarly, misclassification of the $|f\rangle$ state is dominated by $T_1$-ef decay. With a $T_1$-ef of approx. $14.92\, \mu s$, up to 2.65\% of the initial \f population could have decayed to \e or \g. This value is in good agreement with the 2.63\% misclassifications measured on the \f state. The largest fraction thereof is expected to be classified as $|e\rangle$, while a smaller fraction is expected to have decayed twice during the measurement. 
+\end{itemize}
+
+These numbers are summarized in Table \ref{tab:error_mechanisms}. Overall, the error mechanism dominating the state assignment probability matrix is $T_1$- and $T_1$-ef decays, which explain on average 1.41 percentage points\footnote{A percentage point is the unit for the arithmetic difference of two percentages. In this case, it indicates the difference between 98.52\% (observed correct assignment probability)  and 99.93\% (inferred correct assignment probability if there was no decay).}. The total overlap error of the three Gaussian components, computed using the method described in  \ref{s:analytical_derivation_3_gaussians}, amounts to 0.072 points. Together, these two numbers explain nearly perfectly all errors observed in the experiment. 
+
+\begin{table}[ht]
+\centering
+\caption{Error mechanisms for the measurement displayed in Fig. \ref{fig:ssro_opt}.}
+\begin{tabularx}{0.6\textwidth}{ll}
+\toprule 
+\textbf{Error mechanism} & \textbf{Error (percentage points)} \\
+\midrule
+    $T_1$ and $T_1$-ef decay & 1.41 \\
+    GMM fit overlap & 0.07\\
+    \midrule
+    Total explained errors & 1.48  \\
+    \midrule
+    Total errors & 1.48 \\
+\bottomrule
+\end{tabularx}
+
+\label{tab:error_mechanisms}
+\end{table}
+
+In addition, it indicates that improving the qubits lifetime and/or readout speed is the most effective way to further increase the correct state assignment probability. In cases where the overlap errors are higher, it could be meaningful to explore  bichromatic readout pulses. Indeed, this method could help increasing the SNR between the 3 eigenstates, thereby reducing overlap errors. It could also help reducing the readout amplitude, which in turn can contribute reducing measurement induced leakage. It is not clear whether the improvements this readout pulse could provide are significant and worth the inconvenience of having additional parameters to tune.
+
+This analysis does not take into account errors originating from leakage into the $\ket{h}$ (or higher) state(s). These errors can lead to misinterpretation of misclassifications of the \f-level in the observed subspace of states $\{\ket{g}, \ket{e}, \ket{f}\}$, depending on where those higher states are projected in the integrated plane. We do observe such effects when optimizing the readout amplitude (see Appendix \ref{app:ro_opt}, Fig. \ref{fig:ro_opt}) $\ket{h}$-state For a comprehensive study about these errors, see \cite{Sank2016Measurement-InducedApproximation, ElderHigh-fidelityCircuits}. In this report, we make the assumption that, even if not negligeable, these errors do not impact directly the computational subspace spanned by $\{\ket{g}, \ket{e}\}$. Indeed, they mostly occur due to measurement induced transitions on prepared \f-states, which we do not use directly when running quantum algorithms in the computational subspace. 
+
+In the next subsection, we explore the case of hardware constrained state assignement.
+
+
+\subsubsection{Comparison to two-level readout} \label{s:comparison_2_lv_ro}
+In this subsection, we investigate how the three level readout compares to the regular two level readout. In Fig.  \ref{fig:ssro_opt_2lv}, we show the Gaussian mixture classification fitted only on state preparation \g and \e of the dataset discussed in Fig. \ref{s:exp_statistically_opt_state_assignement} and Fig.  \ref{s:experimental_data_hw_constrained}. The average correct assignment probability is 0.59\% higher than the three level readout, resulting in 99.11\% average correct probability assignment. The term \textit{correct} here is ill-defined, as it can be observed that shots from the \g preparation are at the location of the \f distribution but still classified as \g. Depending on the readout frequency, they could also be assigned to the \e state. Similarly, several \e state preparations are assigned \g while it can be visually infered they are in the \f state. This type of errors are precisely what motivates the three level readout, aspecially for experiments where leakage is important such as quantum error detection \cite{Ghosh2013UnderstandingCircuits}. In the presented experiment, the overlap errors introduced by measuring the three states simultaneously does not impact significalty the average correct state assignment probability within the computational subspace (99.10\% versus 99.11\%). It does come at the cost of using an additional integration channel on the UHFQC. When the average SNR is smaller, however, there will be a tradeoff between obtaining a lower readout overlap errors and obtaining information about the \f state population. 
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[t]{0.57\textwidth}
+     \centering 
+     \includegraphics[width=\textwidth]{ssro_opt_2_level.png}
+     \caption{ }
+     \label{fig:ssro_opt_shots_2lv}
+  \end{subfigure}
+  \hspace{5pt}
+  \begin{subfigure}[t]{0.38\textwidth}
+     \centering 
+     \includegraphics[width=\textwidth]{ssro_opt_state_asignment_mtx_2_level.png}
+     \caption{ }
+     \label{fig:ssro_opt_state_asignment_mtx_2lv}
+  \end{subfigure}
+   \caption{Two level readout. (a) Identical single shots as for Fig \ref{fig:ssro_opt_shots}, fitted only on the \g and \e states. (b) State assignment probability matrix corresponding to the time traces displayed in (a) after pre-selection. }
+  \label{fig:ssro_opt_2lv}
+\end{figure}
+
+\subsubsection{Conclusion}
+In this discussion on single shot readout procedures, we have demonstrated the ability to perform three level single shot readout with an average correct assignment probability $> 98\%$ on a physical device. The dominating assignment error mechanism are $T_1$ and $T_1$-ef decay. Next, we have empirically shown that in a high average SNR regime, the difference in performance between the statistically optimal and hardware constrained state assignement procedures perform similarly well. Finally, we compared the three level readout to the two level readout, in which the average correct state assignment probability is higher by 0.59 \% at the expense of not measuring the \f state population. 
+
+In the next part of this experimental section, we provide and discuss example measurement performed using the three level single shot classification. 
+
+\subsection{Illustration measurements}
+To perform measurements using the three level single shot readout, each qubit involved is first calibrated using the procedure described in Section \ref{s:experimental_data}. Thereafter, the fitted GMM can be used to calculate the probabilities for single shots of being in each eigenstate in any experiment. Nevertheless, one knows that the readout is imperfect i.e. the state assignement probability matrix is not diagonal. We are therefore interested in the latent probabilities \cite{Cai2012LatentModeling} of being in each state \textit{relative} to the calibration measurement. This scheme can be modeled as followed:
+\begin{equation}
+    \mathbf{A}^\intercal \cdot \mathbf{\tilde{p}} = \mathbf{p}
+\end{equation}
+where $\mathbf{A}$ is the state assignment probability matrix (3x3), $\mathbf{\tilde{p}}$ is the wanted latent probability (3x1), and $\mathbf{p}$ is the measured probability. To obtain the latent probability, we thus multiply the measured probability by the transpose inverse of the state assignment probability matrix:
+\begin{equation} \label{eq:mtx_inversion}
+     \mathbf{\tilde{p}} = (\mathbf{A}^{\intercal})^{-1} \cdot\mathbf{p}
+\end{equation}
+where $\mathbf{A}^{\intercal})^{-1}$ can be seen as a linear filter acting on $\mathbf{p}$. For example, using this procedure, a pure \e state measurement should result in $\mathbf{\tilde{p}} = [0,1,0]^T$ instead of for instance $\mathbf{p} = [0.017,0.983,0.0]^T$ where $\mathbf{p}^T$ is in this case the second row of the calibration state assignment probability matrix displayed in Fig. \ref{fig:ssro_opt_state_asignment_mtx}. 
+
+Note that this procedure assumes $\mathbf{A}$ to stay constant in time, which is not evidently fulfilled. For instances, fluctuations in $T_1$ and $T_1$-ef intrinsically modify $\mathbf{A}$. To mitigate this issue, a high number of single shots is used to ensure low statistical errors during calibration, and calibration routine has to be repeated regularly. As an alternative, a reference matrix $\mathbf{A}$ can be computed at the end of each measurement sequence. This model assumes there is no fluctuation over the time of the measurement.
+
+In the following section, we either display both the measured and the corrected probabilities (labeled $p(i)$ and $p_c(i)$ respectively), or only the measured probabilities. Two measurement are presented to illustrate the three-level readout scheme. First a Rabi measurement of the \f-level, followed by a $T_1$-ef measurement.
+
+
+\subsubsection{$T_1$ measurement of the \f-level}
+In Fig. \ref{fig:t1ef_3lv}, we show a $T_1$-measurement of the \f-level. At short time scales, the qutrit is in the second excited state and then starts decaying exponentially into the first excited state. The population of the \e-level first grows exponentially as f-population decays with the time constant of T1$_{ef}$. After approximately 20 $\mu s$, the decay from the \e-state to the \g-state with time constant T1$_{ge}$ becomes more important than the remaining incoming population from the \f-level.  This results in a decrease of the \e-level population at larger time scales. The \g-state population is zero at the start of the measurement and increases progressively as the time evolving population of the \e-level decays into the \g-state. 
+
+%\subsubsection{Reset}
+\begin{figure}[H]
+  \centering
+
+     \includegraphics[width=\textwidth]{t1ef_3lv.png}
+     \label{fig:t1ef_3lv}
+\caption{Illustration measurements of the three-level readout scheme on qubit 1.  $T_1$ measurement of the \f-level. Time evolution of measured probabilities for each eigenstate (scattered) and expected probabilities using a rate equation taking into account thermal population (solid lines). A $T_1$-ef of $14.92\, \mu s$ is extracted from the \f level probabilities.}
+\end{figure}
+
+\section{Conclusion \& Outlook}
+This  report  details  the  theoretical  and  experimental  implementation  of  a  single  shot  readout scheme to determine the state of a qutrit with high fidelity. The objective was defined as determining a function or model capable of providing the probability for each shot to be in the \g, \e and \f state respectively. 
+
+Under the assumption of Gaussian measurement noise, the statistically optimal solution consists of a Gaussian Mixture Model, where responsibilities (relative densities of individual Gaussian components) provide the desired state probabilities. 
+
+In practice, this readout scheme consists of two steps. First, finding the readout frequency which minimizes the off-diagnonal elements of the state assignment probability matrix, i.e. a frequency that maximizes contrast between the 3 states concurrently (see Eq. \eqref{eq:optimal_freq}). The optimal frequency is found by minimizing the overlap of 3 Gaussians in the integrated IQ-plane.
+Second, performing a calibration measurement using the 2 sets of mode-matched weights, and fitting a Gaussian mixture model to the data. An alternative model using thresholding on each integration axis is useful to comply to hardware constraints of the UHFQC when performing feedback experiments. 
+
+Both procedures are demonstrated on a physical device, with an average correct assignment probability $> 98\%$. The dominating assignment error mechanism are $T_1$ and $T_1$-ef decay, explaining 1.4 percentage points. Overlap due to finite SNR explains 0.07 percentage points. Only very few measurement induced transitions are observed. Beyond fabricating qubits with longer lifetime or faster readout, a possible improvement to further increase the average correct assignment probability would be to use a bichromatic readout pulse, which could reduce the readout overlap even further. 
+
+Next, we have empirically assessed that at the chosen readout frequency and while the average SNR remains larger than 4, the difference in performance between the statistically optimal and hardware constrained state assignement procedures should not differs by more than 1\%. We compared the three-level readout to the two-level readout, in which the average correct state assignment probability is higher by 0.59\% at the expense of not measuring the \f state population.
+
+Thereafter, we illustrate the use of readout scheme on  a $T_1$-ef measurement. The observed dynamics agree with the expected outcomes of each measurement. 
+The near term goal is to integrate this readout scheme in the tune-up procedure of the CZ phase gate to choose parameters minimizing leakage into the \f-level, thereby producing a high fidelity and low leakage CZ two qubits gate. The scheme also allows to observe dynamics which could not be resolved without direct measurement of the three levels, as presented in the $T_1$-ef measurement. Indeed, \f level-decay  would inevitably mix with effects of \e-level decay when measuring only two states, making it difficult to precisely estimate the \f-level decay rate. 
+
+This schemes also paves the way to exploring how direct measurements of leakage can improve quantum error correction schemes \cite{Bultink2019}.
+\section{3 Level measurement based active reset} \label{sec:active_reset}
+
+\subsection{Hardware constrained state discrimination}
+\subsubsection{Hardware constrained state assignment} \label{s:experimental_data_hw_constrained}
+
+In Fig. \ref{fig:ssro_thr}, we display the same shots as in Fig. \ref{fig:ssro_opt} fitted with the decision tree classifier, to satisfy the hardware constraints of the UHFQC. The boundaries are slightly different from the GMM. Nevertheless, the state assignment probability matrix remains nearly identical. The difference between the two matrices is shown in Fig. \ref{fig:opt_vs_thr_mtx_diff}. The DTM assigns \f state population slightly better than the GMM. As it can be observed in Fig. \ref{fig:ssro_thr_shots}, it exploits the distributions' skewness introduced by $T_1$-ef decay, which cannot be exploited to the same extend by the GMM. This comes at the cost of assigning slightly more \e prepared shots to the \f-level. All remaining features are $<$ 1\textperthousand.
+
+Exploring the relative performance of the two classification strategies \textit{for all} possible arrangements of the 3 states responses in the integrated two dimensional plane and for an arbitrary SNR is a tedious task. Indeed, one would have to scan the infinite set of all triangles in a two dimensional plane, where vertices correspond to the mean integrated traces of the eigenstates. For each triangle, one would sweep the average SNR by varying the standard deviation of the Gaussian components and compute the correct average correct assignment probability for both approaches. The maximal difference on this entire simulation space puts a bound on the relative difference in performance between the two methods. 
+
+\begin{figure}[ht]
+  \centering
+  \begin{subfigure}[t]{0.50\textwidth}
+     \centering 
+     \includegraphics[width=\textwidth]{ssro_thr.png}
+     \caption{ }
+     \label{fig:ssro_thr_shots}
+  \end{subfigure}
+  \hspace{5pt}
+  \begin{subfigure}[t]{0.42\textwidth}
+     \centering 
+     \includegraphics[width=\textwidth]{ssro_thr_state_asignment_mtx.png}
+     \caption{ }
+     \label{fig:ssro_thr_state_asignment_mtx}
+  \end{subfigure}
+   \caption{Hardware constrained state assignment procedure. (a) Identical single shots as for Fig \ref{fig:ssro_opt_shots}, but fitted with the thresholded lassifier. The main difference are the boundaries, set by the thresholds on each axis. The thresholds devide the plane in 4 regions. Two for $|g\rangle$, one for $|e\rangle$ and one for $|f\rangle$  (b) State assignment probability matrix corresponding to the time traces displayed in (a) after pre-selection. }
+  \label{fig:ssro_thr}
+\end{figure}
+
+In this report, we restrict ourselves to investigate the difference between the two approaches on the subspace with a fixed relative configuration of the means (i.e. fixed readout frequency). Namely, we \textit{only} vary the standard deviation of the fitted Gaussian distributions to simulate varying SNR. Results of this sweep for the presented dataset is shown in Fig. \ref{fig:opt_vs_thr}. The maximal difference between the two models in on the order of 1.75\% for this relative arragement of Gaussian distributions in the integrated space. It is observed at an average SNR of 1.97. The expected difference at the average SNR of the experiment (7.35) is $<$ 1\textperthousand. In the measurement itself, the difference is negative as the decision tree classifier exploits the distributions' skewness. This analysis suggest that, in the limit of high average SNR, the two models are expected to deliver similar performance.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[t]{0.40\textwidth}
+     \centering 
+     \includegraphics[width=\textwidth]{comp_mtx_diff.png}
+     \caption{ }
+     \label{fig:opt_vs_thr_mtx_diff}
+  \end{subfigure}
+  \hspace{5pt}
+  \begin{subfigure}[t]{0.48\textwidth}
+     \centering 
+     \includegraphics[width=\textwidth]{opt_vs_thr.png}
+     \caption{ }
+     \label{fig:opt_vs_thr}
+  \end{subfigure}
+    \caption{Comparison between statistically optimal and hardware constrainted procedures. (a) Difference between the hardware constrained and statistically optimal assignment probability matrices for the measurement presented in \ref{fig:ssro_thr_state_asignment_mtx} and \ref{fig:ssro_opt_state_asignment_mtx}. Positive (negative) entries on the diagonal indicate the hardware constrained optimal scheme performs better (worse) than the statistically optimal one. Positive (negative) off-diagonal elements indicate the hardware constrained scheme introduces more (less) errors than the statistically optimal one. See main text for details. (b) Diffence in average correct state assignment probability for different SNR at fixed readout frequency, simulated by a sweep of the standard deviations of the Gaussian components (green). The difference goes to 0 both when the standard deviation approaches 0 and infinity. The average SNR (blue) for each standard deviation and experimental difference (green cross) are additionally shown.  The maximal expected difference is $<$ 2\%, in favor of the statistically optimal model and would happen at an average SNR $<$ 2.}
+    \label{fig:opt_vs_thr}
+\end{figure}
+
+The analysis so far assumes unlimited and fast computational power, however, in experiments additional constraints may be imposed. For instance, for feedback experiments using the UHFQC. During such an experiment, a user-defined pulse can be applied at runtime depending on a preceding readout pulse. This allows for instance to actively reset a qubit from the $|e\rangle$ to the $|g\rangle$ using a $R^{\pi}_x$ pulse instead of waiting for it to decay spontaneously before starting the next experiment. Naturally, the feedback pulse must be applied \textit{very rapidly} after the measurement to ensure the qubit does not decay in the meanwhile.
+
+To define which pulse to apply, the UHFQC has to assign the state to the qubit at runtime. To keep the delay between the measurement and application of the feedback pulse below 1 $\mu s$, the UHFQC imposes the constraint of using  solely threshold values on each integration axis to assign the state of the qubit. In other words, instead of using the statistically optimal decision boundaries provided by the GMM, which are arbritrary straight lines or curves in the two-dimensional integrated plane, the plane has to be cut with lines perpendicular to each integration axis. The conceptual difference between these two approaches is visualized in Fig. \ref{fig:comp_ssro_opt_thr}. 
+
+\begin{figure}[ht]
+  \centering
+  \begin{subfigure}[t]{0.45\textwidth}
+     \centering 
+     \includegraphics[width=\textwidth]{comp_ssro_opt.png}
+     \caption{ }
+     \label{fig:comp_ssro_opt}
+  \end{subfigure}
+  \hspace{5pt}
+  \begin{subfigure}[t]{0.45\textwidth}
+     \centering 
+     \includegraphics[width=\textwidth]{comp_ssro_thr.png}
+     \caption{ }
+     \label{fig:comp_ssro_thr}
+  \end{subfigure}
+   \caption{Visual comparison between the statistically optimal and hardware constrained state assignment procedure on experimental data (50 000 shots for each eigenstate). The shaded background color corresponds to where the respective state is more likely than the other two. (a) Statistically optimal state assignment. The boundaries between the states are arbitrary lines in the two-dimensional plane. (b) Hardware constrained state assignment. The plane is devided into 4 regions based on a threshold on each axis, and a most likely state is assigned to each region. The boundaries are perpendicular to the integration unit axis.}
+  \label{fig:comp_ssro_opt_thr}
+\end{figure}
+
+Decision Trees (DT) are particularly fitted to solve this type of problem. Indeed, they split the data into different classes according to binary choices made on values along the axis. In the case described above, a decision tree of depth of 2 finds two thresholds that best separate the 3 eigenstates in the two dimensional plane. The CART algorithm is typically used to build Decision Trees \cite{Breiman1984}. This algorithm builds the tree sequencially (node-by-node) by extensive search of different possible splits and keeping the optimal one. To find the optimal split, the CART algorithm use a user-defined cost function to evaluate the quality of a split at a particular value. Typically, the Gini Index is used for classification trees \cite{Bishop2006, Breiman1984}:
+\begin{equation}
+   I_G = \sum_{k=0}^{K-1} p_{k}\left(1-p_{k}\right)
+\end{equation}
+where $p_k$ represents the proportion of the data to be assigned to state $|k\rangle$ under the region defined by this split, and $K$ is the number of classes (3 in this case). The elements of the sum vanish if $p_k$ is 0 or 1, and reach a maximum if $p_k$ is 0.5, thereby encouraging the formation of regions with high proportions of single states \cite[p.~666]{Bishop2006}. 
+
+No general statement can be made about the performance comparison between the GMM and the Decision Tree Model (DTM). However, one can note that both in the limit of narrow and infinitely broad Gaussian distributions, both models perform equally well. Indeed, the average correct assigment probability, $\mathcal{F}$, becomes at its limits:
+\begin{subequations}
+\begin{equation}  \label{eq:opt_vs_thr_lim_0}
+    \mathcal{F}_{\Sigma_k \xrightarrow{} 0} = \lim_{\Sigma_k \xrightarrow{} 0} \frac{1}{K}\sum_{k=0}^{K-1}\int_{\mathcal{R}_k} \mathcal{N}(\,\boldsymbol{\mu}_{k}, \mathbf{\Sigma}_{k}) = 1
+\end{equation}
+\begin{equation} \label{eq:opt_vs_thr_lim_inf}
+    \mathcal{F}_{\Sigma_k \xrightarrow{} \infty} = \lim_{\Sigma_k \xrightarrow{} \infty} \frac{1}{K}\sum_{k=0}^{K-1}\int_{\mathcal{R}_k} \mathcal{N}( \,\boldsymbol{\mu}_{k}, \mathbf{\Sigma}_{k}) = \frac{1}{K}
+\end{equation}
+
+\end{subequations}
+with $\mathcal{R}_k$ the arbitrary integration region (defined by any curve, perpendicular or not to the axis) assuming the respective mean of distribution $k$ is located somewhere within $\mathcal{R}_k$. In practice, this indicates that is the case of well separated eigenstates, the difference between the two model's performance should be relatively low. An analysis is performed in  \ref{s:experimental_data_hw_constrained} using experimental data to test the validity of this approximation.

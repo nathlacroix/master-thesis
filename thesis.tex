@@ -64,8 +64,7 @@
 %% thesis.
 \input{theoremsetup}
 
-%% Helpful macros.
-\input{macrosetup}
+
 
 %% Make document internal hyperlinks wherever possible. (TOC, references)
 %% This MUST be loaded after varioref, which is loaded in 'extrapackages'
@@ -80,6 +79,8 @@
     \fi%
     }}
 
+%% Helpful macros.
+\input{macrosetup}
 
 \makeglossaries
 
@@ -92,6 +93,8 @@
 \advisors{Advisors: Prof.\ Dr.\ A. Wallraff, Dr.\ C.K. Andersen}
 \department{Department of Solid States Physics}
 \date{January 14, 2020}
+
+
 
 \begin{document}
 
@@ -127,7 +130,7 @@
 % \input{rules}
 % \input{typography}
 \input{chapters/transmon_cqed/transmon_cqed.tex}
-\input{chapters/qutrit_readout/qutrit_readout.tex}
+%\input{chapters/qutrit_readout/qutrit_readout.tex}
 \input{chapters/carb_gate/carb_gate.tex}
 \input{chapters/qaoa/qaoa.tex}
 \input{conclusion.tex}
@@ -138,7 +141,7 @@
 \backmatter
 
 \bibliographystyle{plain}
-\bibliography{references_mendeley}
+\bibliography{ressources/references_mendeley}
 
 \includepdf[pages={-}]{declaration-originality.pdf}
 

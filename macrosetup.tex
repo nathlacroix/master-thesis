@@ -19,8 +19,8 @@
 \renewcommand{\epsilon}{\ensuremath\varepsilon}
 
 %% Also set the alternate phi as default.
-\let\oldphi\phi
-\renewcommand{\phi}{\ensuremath{\varphi}}
+% \let\oldphi\phi
+% \renewcommand{\phi}{\ensuremath{\varphi}}
 
 % quantum states
 \newcommand{\oo}{$\ket{11}$ }
@@ -30,6 +30,30 @@
 \newcommand{\tz}{$\ket{20}$ }
 \newcommand{\zt}{$\ket{02}$ }
 
+\newcommand{\0}{$\ket{0}$}
+\newcommand{\1}{$\ket{1}$}
+\newcommand{\2}{$\ket{2}$}
+
 \newcommand{\g}{$\ket{g}$ }
 \newcommand{\e}{$\ket{e}$ }
 \newcommand{\f}{$\ket{f}$ }
+
+% Math
+% straight symbols
+\renewcommand{\i}{\mathrm i}
+\let\d\undefined 
+\newcommand{\d}{\ensuremath{\,\mathrm d}}
+\newcommand{\unit}[1]{\ensuremath{\,\mathrm{#1}}}
+\newcommand{\sexp}[1]{\ensuremath{\mathrm e^{#1}}}
+
+% qaoa stuff
+\newcommand{\cost}{\ensuremath{C(\vec\gamma, \vec\beta)}}
+\newcommand{\qaoaMeasuredState}{\ensuremath{|\vec{\gamma}, \vec{\beta}\rangle}}
+\newcommand{\optimalstate}{\ensuremath{\ket{\psi_\mathrm{opt}}}}
+
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+% table stuff
+\newcommand{\STAB}[1]{\begin{tabular}{@{}c@{}}#1\end{tabular}}
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
