@@ -122,11 +122,11 @@ Note that the optimization is performed on the smooth landscape of \cost{} and n
 
 
 \section{Experiment}
-In this section, we implement the \gls{qaoa} on a quantum processor to find an approximate solution to a combinatorial optimization problem with 3 qubits. We use qubits 1, 2 and 3 of the device presended in Appendix \ref{app:device}. Information relative to the two qubit gates can be found in Appendix \ref{app:two_qb_gates}.
+In this section, we implement the \gls{qaoa} on a quantum processor to find an approximate solution to a combinatorial optimization problem with 3 qubits. We use qubits 1, 2 and 3 of the device presended in Appendix \ref{app:device}. Information relative to the single- and two-qubit gates are reported in Appendix \ref{app:gate_parameters}. All measurements are performed with 3-level single shot readout
 
-In addition, we assess how the direct and decomposed implementations of the arbitrary phase gate affect the performance of the algorithm. 
+After introducing the combinatorial problem, we assess how the direct and decomposed implementations of the arbitrary phase gate affect the performance of the algorithm for different depths. We show that the direct implementation allows to solve the problem more effectively than the decomposed implementation, because more layers can be implemented for a fixed length. 
 
-\subsection{Exact cover}
+\subsection{Exact cover: definition and example problem instance}
 We use \gls{qaoa} to find an approximate solution to an instance of the exact cover problem. The exact cover \cite{Karp1972ReducibilityProblems} is an NP-complete \cite{GareyM1990} decision problem formulated as follow: \textit{given a set $\mathcal{N}$, and a collection $\mathcal{L}$ of subsets of $\mathcal{N}$, is there a subcollection $\mathcal{L}'$ of $\mathcal{L}$ for which each element in $\mathcal{N}$ is included exactly once?} In other words, elements of the subcollection $\mathcal{L}'$ must be disjoint and their union must be $\mathcal{N}$.
 
 As mentioned in Section \ref{sec:qaoa}, any NP-complete can be mapped onto an Ising Hamiltonian in polynomial time. For the exact cover, it is most conviently done using an incidence matrix $M$ \cite{WeissteinIncidenceMatrix}, where each row corresponds to an element of $\mathcal{L}$ and each column to an element of $\mathcal{N}$. The matrix element $M_{ln}$ is equal to 1 if the $l$-th element of $\mathcal{L}$ contains the $n$-th element of $\mathcal{N}$ and 0 otherwise.
@@ -154,9 +154,11 @@ The resulting cost Hamiltonian is
 \begin{equation}
     \hat C = \frac{1}{2}\hat\sigma_1^z\hat\sigma_2^z + \hat\sigma_2^z\hat\sigma_3^z
 \end{equation}
-and the corresponding cost function $\cost = \bra{\vec\gamma, \vec\beta} \hat C \qaoaMeasuredState{}$ reaches its minimum value of $-1.5$ when $\qaoaMeasuredState{} = \ket{101}$ or $\ket{010}$.
+and the corresponding cost function $\cost = \bra{\vec\gamma, \vec\beta} \hat C \qaoaMeasuredState{}$ reaches its minimum value of $-1.5$ when $\qaoaMeasuredState{} = \ket{101}$ or $\ket{010}$. 
 
-In the following sections, we implement the 
+From noise-free simulations of the unitary evolution combined with brute force optimization, we observe that the problem requires 3 layers to achieve a success probability larger than 99\%.
+
+In the following sections, we present the results of the i
 explain experiment and goal to compare both implementations
 -refer to appendix for details about device and two qubit gates params
 - describe that we remove leakage.
