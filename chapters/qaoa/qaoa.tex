@@ -61,7 +61,7 @@ The resulting state \qaoaMeasuredState{} is then measured in the $Z$ basis. A cl
 \begin{figure}
     \centering
     \includegraphics[width=\textwidth]{chapters/qaoa/figs/qaoa_scheme.png}
-    \caption{The \gls{qaoa} scheme. (a) The scheme consists of two steps. First, the quantum computer applies $p$ alternating sequences -- called layers -- of two Hamiltonians ($\hat C$ and $\hat B$) scaled by layer-dependent variational parameters to an equal superposition state. The resulting state, $\ket{\vec\gamma,\vec\beta}$, is prepared and measured several time to obtain an estimate for the expectation value of a cost function \cost, based on the expectation values of single and two qubit terms. Based on this estimate, a classical optimizer alters the variational parameters to minimize \cost. The output of the algorithm is the projection of state \optimalstate yielding an bit-string which cost is small. }
+    \caption{The \gls{qaoa} scheme. (a) The scheme consists of two steps. First, the quantum computer applies $p$ alternating sequences -- called layers -- of two Hamiltonians ($\hat C$ and $\hat B$) scaled by layer-dependent variational parameters to an equal superposition state. The resulting state, $\ket{\vec\gamma,\vec\beta}$, is prepared and measured several time to obtain an estimate for the expectation value of a cost function \cost{}, based on the expectation values of single and two qubit terms. Based on this estimate, a classical optimizer alters the variational parameters to minimize \cost{}. The output of the algorithm is the projection of state \optimalstate{} yielding an bit-string yielding a low cost. (b) Implementation of a layer of the \gls{qaoa} restricted to qubit $Q_n$ and $Q_m$ for an Ising cost Hamiltonian consisting only of two qubit terms. The gate's background color indicates which part in (a) it implements. The single qubit Z gates are virtual gates implemented by adding phase on the subsequent pulses. The two-qubit interaction is mediated by a \gls{carb}. The arbitrary single qubit x-rotations are not calibrated on the device and are thus decomposed into two y-rotations and a Z rotation. (c) Implementation of a layer of the \gls{qaoa} restricted to qubit $Q_n$ and $Q_m$ for an Ising cost Hamiltonian consisting only of two qubit terms. The green-shaded gates correspond to the decomposition of the \gls{carb}, i.e. using \glspl{cz} and single qubit gates.}
     \label{fig:qaoa_scheme}
 \end{figure}
 \subsection{The importance of depth}
@@ -123,7 +123,7 @@ Note that the optimization is performed on the smooth landscape of \cost{} and n
 
 
 \section{Experiment}
-In this section, we implement the \gls{qaoa} on a quantum processor to find an approximate solution to a combinatorial optimization problem with 3 qubits. We use qubits 1, 2 and 3 of the device presended in Appendix \ref{app:device}. Information relative to the single- and two-qubit gates are reported in Appendix \ref{app:gate_parameters}. All measurements are performed with 3-level single shot readout. In the context of the \gls{qaoa}, leakage events can be seen as measuring bit strings which do not belong to the space of possible solutions. We therefore discard measurements in which one or several of the qubits are measured in the $f$-level. Hence leakage events reduce the effective number of shots on which we compute estimates. They do not, however, influence the algorithm as long as as the excitation stays in the f-level until the state is measured. We make this assumption, as sequences of interest are shorter than 4 micro-seconds, and the shortest f-level \t1 is approximately 10 micro-seconds. All measurements are done without ground state heralding or readout error correction.
+In this section, we implement the \gls{qaoa} on a quantum processor to find an approximate solution to a combinatorial optimization problem with 3 qubits. We use qubits 1, 2 and 3 of the device presended in Appendix \ref{app:device}. Information relative to the single- and two-qubit gates are reported in Appendix \ref{app:gate_parameters}. All measurements are performed with 3-level single shot readout. In the context of the \gls{qaoa}, leakage events can be seen as measuring bit strings which do not belong to the space of possible solutions. We therefore discard measurements in which one or several of the qubits are measured in the $f$-level. Hence leakage events reduce the effective number of shots on which we compute estimates. They do not, however, influence the algorithm as long as as the excitation stays in the f-level until the state is measured. We make this assumption, as sequences of interest are shorter than 4 micro-seconds, and the shortest f-level T$_1$ is approximately 10 micro-seconds. All measurements are done without ground state heralding or readout error correction.
 
 After introducing the combinatorial problem, we assess how the direct and decomposed implementations of the arbitrary phase gate affect the performance of the algorithm for different depths. We show that the direct implementation allows to solve the problem more effectively than the decomposed implementation, because more layers can be implemented for a fixed algorithm sequence length. 
 
@@ -166,23 +166,27 @@ explain experiment and goal to compare both implementations
 
 
 \section{Optimization landscapes ($p$ = 1)}
-In Fig. \ref{fig:qaoa_landscapes}, we present the optimization landscapes for a \gls{qaoa} implementation with one layer. 
+To find the best approximation to the problem using the \gls{qaoa} implementation with 1 layer, we perform a 45x45 grid search over the two variational parameters, $\gamma$ and $\beta$. $\gamma$ is at least $\pi$-periodic since the smallest eigenvalue (in absolute value) of \costh{} is 1/2 and $\gamma$ is multiplied by 4 in the controlled arbitrary phase gate. $\beta$ corresponds to single qubit x-rotation and is thus at least $2\pi$-periodic.  We thus restrict our search space to the interval $[0, \pi] \,\times\, [0, 2\pi]$. For each parameter pair, we repeat the state preparation and measurement 20000 times. A classical computer evaluates the expectation values $\langle\szsz{1}{2}\rangle$ and $\langle \szsz{2}{3} \rangle$ from which the cost \cost{} is estimated.
+
+We execute this measurement both for the direct and decomposed implementation of the \gls{carb}, and present the result in Fig. \ref{fig:qaoa_landscapes} along with the landscape obtained with a noise-free unitary evolution simulated in QuTip \cite{Johansson2013QuTiPSystems}. We observe a good qualitative agreement between theory and measurements. All landscapes contain local minima, which set hurdles to local optimizers seeking the global minimum of the landscape, as discussed in detail in Section \ref{sec:qaoa_random_init}. Note that even in the noise-free simulation, \cost{} never reaches its minimum value of -1.5 thereby indicating that additional layers ($p >1$) are required to achieve lower cost values. 
+The landscape obtained with the decomposed implementation of the \gls{carb} also shows a diagonal feature, most probably originating from coherent errors caused by residual $zz$ coupling which accumulates over the longer sequence. Decoherence also affects both landscapes and explains the slightly lower contrast compared to the landscape of the noise-free simulation.
+
+TODO: add abc on landscape
 \begin{figure}[ht]
     \centering
     \includegraphics[width=\textwidth]{chapters/qaoa/figs/qaoa_landscapes_20200129_125251.png}
-    \caption{Landscapes}
+    \caption{Optimization landscapes for a \gls{qaoa} implementation with one layer. The two variational parameters, $\gamma$ and $\beta$ are swept over a 45x45 grid, and the cost function is computed for each parameter pair. Local minima appear in the landscape for values of $\gamma$ larger than $\pi/2$.(a) Landscape obtained with noise-free simulation. The minimal cost function value is approximately -1.05. (b) Landscape obtained with the direct implementation of the \gls{carb}. Taken with 20000 single shot measurements per parameter pair. (c) Landscape obtained with the decomposed implementation of the \gls{carb}. Taken with 20000 single shot measurements per parameter pair. }
     \label{fig:qaoa_landscapes}
 \end{figure}
-- landscapes
-- simulation
+
 - local minimas
 - intuition for parameters space shape
 
-\section{Init from random}
+\section{Init from random} \label{sec:qaoa_random_init}
 \begin{figure}[ht]
     \centering
     \includegraphics[width=\textwidth]{chapters/qaoa/figs/ch5_qaoa_optimization_traces_20200116_165916.png}
-    \caption{Optimization landscapes for a \gls{qaoa} implementation with one layer. The two variational parameters, $\gamma$ and $\beta$ are swept with a 45x45 grid. Each pixel consists of the expectation value of the cost function obtained from 20000 single shots. (a) Landscape obtained with noise-free simulation. Clear local minima appear for values of $\gamma$ larger than $\pi/4$. The minimal cost function value is approximately -1.05. (b) Landscape obtained with the direct implementation. }
+    \caption{}
     \label{fig:qaoa_optimization_traces}
 \end{figure}
 - discuss optimizer, say what other used, what is important (low sampling, noise robust, avoid local minima)
