@@ -65,11 +65,12 @@
 \settocdepth{subsection}
 %%begin novalidate
 %% Titlepage adjustments
-\pretitle{\vspace{0pt plus 0.7fill}\begin{center}\HUGE\sffamily\bfseries}
+\pretitle{\vspace{1.5in}\begin{center}\huge\sffamily\bfseries}
 \posttitle{\end{center}\par}
-\preauthor{\par\begin{center}\let\and\\\Large\sffamily}
+\preauthor{\par\begin{center}\let\and\\\LARGE\sffamily}
 \postauthor{\end{center}}
-\predate{\par\begin{center}\Large\sffamily}
+\predate{\par\begin{center}\Large\sffamily\@thesistype\end{center}
+\par\begin{center}\Large\sffamily}
 \postdate{\end{center}}
 %%end novalidate
 \def\@advisors{}
@@ -81,10 +82,16 @@
 
 \renewcommand{\maketitlehooka}{\noindent\ETHlogo[2in]}
 
-\renewcommand{\maketitlehookb}{\vspace{1in}%
-  \par\begin{center}\Large\sffamily\@thesistype\end{center}}
+\renewcommand{\maketitlehookb}{\vspace{0.5in}%
+  }
 
 \renewcommand{\maketitlehookd}{%
+\vspace{0.4in}
+\begin{center}
+    \includegraphics[width=1\textwidth, 
+    trim={0cm 0 0 2.3cm}, clip]{cover_picture.png}
+\end{center}
+
   \vfill\par
   \begin{flushright}
     \sffamily

@@ -27,13 +27,14 @@
 %% capable, so you may want to use 'latin1' instead.
 \usepackage[utf8]{inputenc}
 
+\usepackage{wasysym}
 %% This changes default fonts for both text and math mode to use Herman Zapfs
 %% excellent Palatino font.  Do not change this.
 \usepackage[sc]{mathpazo}
 
 %% The AMS-LaTeX extensions for mathematical typesetting.  Do not
 %% remove.
-\usepackage{amsmath,amssymb,amsfonts,mathrsfs}
+\usepackage{amsmath,amssymb,amsfonts,mathrsfs, bm}
 
 %% NTheorem is a reimplementation of the AMS Theorem package. This
 %% will allow us to typeset theorems like examples, proofs and
@@ -64,35 +65,35 @@
 %% thesis.
 \input{theoremsetup}
 
-
-
 %% Make document internal hyperlinks wherever possible. (TOC, references)
 %% This MUST be loaded after varioref, which is loaded in 'extrapackages'
 %% above.  We just load it last to be safe.
-\usepackage[linkcolor=black,colorlinks=true,citecolor=black,filecolor=black, backref=page]{hyperref}
-% configure back references
-\renewcommand*{\backref}[1]{}
-\renewcommand*{\backrefalt}[4]{{%
-    \ifcase #1 Not cited.%
-          \or Cited on page~#2.%
-          \else Cited on pages #2.%
-    \fi%
-    }}
+% \usepackage[linkcolor=black,colorlinks=true,citecolor=black,filecolor=black, backref=page]{hyperref}
+% % configure back references
+% \renewcommand*{\backref}[1]{}
+% \renewcommand*{\backrefalt}[4]{{%
+%     \ifcase #1 Not cited.%
+%           \or Cited on page~#2.%
+%           \else Cited on pages #2.%
+%     \fi%
+%     }}
 
 %% Helpful macros.
 \input{macrosetup}
-
+\glsdisablehyper
 \makeglossaries
+
+\addbibresource{ressources/references.bib}
 
 %% Document information
 %% ====================
 
-\title{Implemention of three-level readout and controlled arbitrary phase gates for quantum optimization algorithms with superconducting circuits}
-\author{N. Lacroix}
+\title{Variational Quantum Algorithms\\ with Controlled Arbitrary Phase Gates}
+\author{Nathan Lacroix}
 \thesistype{Master Thesis}
-\advisors{Advisors: Prof.\ Dr.\ A. Wallraff, Dr.\ C.K. Andersen}
+\advisors{Advisors: Prof.\ Dr.\ Andreas Wallraff, Dr.\ Christian K. Andersen}
 \department{Department of Solid States Physics}
-\date{January 14, 2020}
+\date{April 17, 2020}
 
 
 
@@ -116,33 +117,31 @@
 \cleartorecto
 \tableofcontents
 \cleartorecto
-\listoffigures
-\cleartorecto
-\listoftables
-\cleartorecto
+%\listoffigures
+% \cleartorecto
+% \listoftables
+% \cleartorecto
 \input{glossaries.tex}
 \printglossary[type=\acronymtype] 
 
 \mainmatter
 
-%% Your real content!
-\input{introduction}
-% \input{rules}
-% \input{typography}
-\input{chapters/transmon_cqed/transmon_cqed.tex}
-%\input{chapters/qutrit_readout/qutrit_readout.tex}
+\input{chapters/introduction.tex}
 \input{chapters/carb_gate/carb_gate.tex}
 \input{chapters/qaoa/qaoa.tex}
-\input{conclusion.tex}
+\input{chapters/conclusion.tex}
+\input{chapters/outlook.tex}
+
 \appendix
 
-\input{appendices/setup.tex}
+\input{appendices/setup/setup}
+\input{appendices/qutrit_readout/qutrit_readout}
 
 \backmatter
-
-\bibliographystyle{plain}
-\bibliography{ressources/references_mendeley}
-
+\input{acknowledgments}
+% \bibliographystyle{unsrt}
+% \bibliography{ressources/references}
+\printbibliography
 \includepdf[pages={-}]{declaration-originality.pdf}
 
 \end{document}

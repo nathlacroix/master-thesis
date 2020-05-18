@@ -1,0 +1,16 @@
+\chapter{Conclusion}
+\glsresetall{}
+
+% Large-scale, fault-tolerant quantum computing has the potential to impact numerous fields such as chemistry, medical research, material science, information security and logistics. However, building large-scale and noise-free quantum computers is a substantial challenge. Consequently, near-term quantum computers will only have a limited number of quantum bits (qubits) and a limited computing time during which operations are executed reliably.
+
+% \Glspl{vqa} are good candidates to take advantage of the quantum hardware in the near-term because they offset part of the computation to classical computers and are intrinsically more robust to noise mostly because they seek approximate solutions. The available computation time remains nevertheless limited by time-dependent errors such as decoherence and residual $ZZ$-coupling.
+
+In  this  thesis,  we  demonstrated  a  way  to  enhance  the  performance  of \glspl{vqa} by reducing the  sequence length  required  to implement their circuit on quantum hardware. In particular, we enlarged the gate-set available on the quantum computer with a \gls{carb}, which enables us to avoid decomposition of higher order operations into multiple gates. 
+
+The \gls{carb} is a generalized version of the controlled $\pi$-phase two-qubit gate (CZ gate). It is able to reach any phase on the \oo{} state between 0 and $2\pi$. Our implementation achieves an average process fidelity of 97.7\%, whereby the remaining errors are dominated by decoherence and effects of thermal population. The average leakage per gate amounts to 1.4\%, which is slightly lower than the leakage we obtain for a CZ gate implemented on the same physical qubits.
+
+We demonstrated the advantage of \gls{carb} on a three qubit exact cover problem instance which we solved using the \gls{qaoa}, a \gls{vqa} that finds approximate solutions to combinatorial problems.  The instance we considered is the first experimental implementation requiring three QAOA layers to be solved with high success probability. 
+
+We obtain a 50\% two-qubit gate count reduction and a gate sequence length reduction factor of 3 using the direct implementation of the \gls{carb} compared to a decomposition into \glspl{cz} and single qubit gates. Consequently, we achieve a higher success probability with the direct implementation (0.84 versus 0.64) because it executes more layers for a fixed sequence length. 
+
+We foresee an even more pronounced advantage for larger-scale experiments because the number of layers required to solve problems typically scales with the number of qubits involved in the experiment. Therefore, for as long as quantum devices are limited by decoherence, \glspl{carb} will open the door to solving more complex problem instances with \gls{vqa}.

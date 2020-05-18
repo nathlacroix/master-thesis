@@ -1,4 +1,14 @@
-\chapter{abstract}
-  This example thesis briefly shows the main features of our thesis
-  style, and how to use it for your purposes.
+\chapter{Abstract}
+Large-scale, fault-tolerant quantum computing has the potential to impact numerous fields such as medical research, material science and information security. However, near-term quantum computers will only have a limited number of quantum bits and a limited quantum circuit size that can be executed reliably.
 
+\Glspl{vqa} mitigate the consequences of these constraints by outsourcing part of the computation to classical computers and seeking approximate -- instead of exact -- solutions.  However, the gate sequence length that can be executed still remains limited by noise, in particular decoherence. Hence, most implementations so far are restricted to problem instances that can be solved with low depth circuits. Nevertheless, real-world applications involving a higher number of qubits will most likely require deeper circuits to approximate solutions accurately. 
+
+In this thesis, we present and implement a two-qubit gate that takes advantage of the structure in the \gls{qaoa} to reduce the sequence length of the algorithm. Namely, we extend the standard \gls{cz} to a \gls{carb} by exploiting off-resonant interaction mechanisms and careful calibration of gate length, interaction strength and dynamic phases. Our implementation of the \gls{carb} achieves an average process fidelity of 97.7\%, which we measure with process tomography.
+
+In addition, we demonstrate the advantage of \glspl{carb} on a 3-qubit \gls{qaoa} implementation solving an exact cover problem instance. We reduce the two-qubit gate-count by 50\% and the sequence length by a factor of 3 compared to a decomposed implementation with standard CZ gates. Consequently, we achieve a higher success probability with the direct implementation (0.84 versus 0.64) and foresee an increasing advantage for larger-scale problems because  the  number  of  layers  required  for a good approximate solution typically  scales with the number of  qubits in the problem.
+
+% TODO:
+% qaoa landscape symmetries
+% outlook surface 7 experiment. + check qaoa plan
+
+\glsresetall{}

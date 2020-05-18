@@ -18,26 +18,25 @@
 \let\oldepsilon\epsilon
 \renewcommand{\epsilon}{\ensuremath\varepsilon}
 
-%% Also set the alternate phi as default.
-% \let\oldphi\phi
-% \renewcommand{\phi}{\ensuremath{\varphi}}
-
+% physics stuff
 % quantum states
-\newcommand{\oo}{$\ket{11}$ }
-\newcommand{\zz}{$\ket{00}$ }
-\newcommand{\oz}{$\ket{10}$ }
-\newcommand{\zo}{$\ket{01}$ }
-\newcommand{\tz}{$\ket{20}$ }
-\newcommand{\zt}{$\ket{02}$ }
+\newcommand{\oo}{\ensuremath{\ket{11}}}
+\newcommand{\zz}{\ensuremath{\ket{00}}}
+\newcommand{\oz}{\ensuremath{\ket{10}}}
+\newcommand{\zo}{\ensuremath{\ket{01}}}
+\newcommand{\tz}{\ensuremath{\ket{20}}}
+\newcommand{\zt}{\ensuremath{\ket{02}}}
 
-\newcommand{\0}{$\ket{0}$}
-\newcommand{\1}{$\ket{1}$}
-\newcommand{\2}{$\ket{2}$}
+\newcommand{\0}{\ensuremath{\ket{0}}}
+\newcommand{\1}{\ensuremath{\ket{1}}}
+\newcommand{\2}{\ensuremath{\ket{2}}}
 
-\newcommand{\g}{$\ket{g}$ }
-\newcommand{\e}{$\ket{e}$ }
-\newcommand{\f}{$\ket{f}$ }
+\newcommand{\g}{\ensuremath{\ket{g}}}
+\newcommand{\e}{\ensuremath{\ket{e}}}
+\newcommand{\f}{\ensuremath{\ket{f}}}
 
+% units
+\newcommand{\degree}{\ensuremath{^\circ}}
 % Math
 % straight symbols
 \renewcommand{\i}{\mathrm i}
@@ -45,17 +44,21 @@
 \newcommand{\d}{\ensuremath{\,\mathrm d}}
 \newcommand{\unit}[1]{\ensuremath{\,\mathrm{#1}}}
 \newcommand{\sexp}[1]{\ensuremath{\mathrm e^{#1}}}
+\newcommand{\us}{\ensuremath{\,\mu\textrm{s}}}
+
+\newcommand{\transpose}[1]{\ensuremath{#1^\intercal}}
 
 % quantum stuff
 \newcommand{\costhamiltonian}{\ensuremath{\hat C}}
 \newcommand{\ry}[1]{\ensuremath{Y(#1)}}
 \newcommand{\rx}[1]{\ensuremath{X(#1)}}
 \newcommand{\szsz}[2]{\ensuremath{\sigma_{#1}^z \sigma_{#2}^z}}
+\renewcommand{\t}[1]{\ensuremath{T_{#1}}}
 
 % qaoa stuff
 \newcommand{\cost}{\ensuremath{C(\vec\gamma, \vec\beta)}}
 \newcommand{\costh}{\ensuremath{\hat C}} % cost hamiltonian
-
+\newcommand{\qaoa}[1]{\gls{qaoa}$_{#1}$}
 
 \newcommand{\qaoaMeasuredState}{\ensuremath{|\vec{\gamma}, \vec{\beta}\rangle}}
 \newcommand{\optimalstate}{\ensuremath{\ket{\psi_\mathrm{opt}}}}
